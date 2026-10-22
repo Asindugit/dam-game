@@ -1,0 +1,279 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>International Draughts</title>
+
+    <link rel="stylesheet" href="style.css">
+
+    <!-- Socket.IO multiplayer -->
+    <script src="/socket.io/socket.io.js"></script>
+
+    <!-- Game logic -->
+    <script src="game.js" defer></script>
+</head>
+
+<body>
+    <div class="app">
+
+        <!-- Header -->
+        <header class="topbar">
+            <div class="brand">
+                <div class="brand-icon">♛</div>
+
+                <div>
+                    <h1>International Draughts</h1>
+                    <p>Classic strategy. Cinematic experience.</p>
+                </div>
+            </div>
+
+            <div class="connection-status">
+                <span id="connectionDot" class="status-dot"></span>
+                <span id="connectionStatus">Connecting...</span>
+            </div>
+        </header>
+
+        <main class="main-layout">
+
+            <!-- Game area -->
+            <section class="game-panel">
+
+                <div class="section-heading">
+                    <div>
+                        <p class="eyebrow">THE GAME TABLE</p>
+                        <h2>Dam Board</h2>
+                    </div>
+
+                    <div class="game-badge">
+                        <span class="badge-dot"></span>
+                        INTERNATIONAL RULES
+                    </div>
+                </div>
+
+                <!-- Cinematic table scene -->
+                <div class="board-section">
+
+                    <!-- Opponent seat -->
+                    <div class="player-seat opponent">
+                        <div class="seat-avatar black">♟</div>
+
+                        <div class="seat-details">
+                            <strong>Black Player</strong>
+                            <small>OPPONENT</small>
+                        </div>
+
+                        <div class="seat-color black-color"></div>
+                    </div>
+
+                    <div class="table-scene">
+
+                        <div class="table-glow"></div>
+
+                        <!-- Game canvas -->
+                        <canvas
+                            id="board"
+                            aria-label="International Draughts game board"
+                        ></canvas>
+
+                    </div>
+
+                    <!-- Your seat -->
+                    <div class="player-seat you">
+                        <div class="seat-avatar white">♙</div>
+
+                        <div class="seat-details">
+                            <strong>White Player</strong>
+                            <small>YOUR SIDE</small>
+                        </div>
+
+                        <div class="seat-color white-color"></div>
+                    </div>
+
+                </div>
+
+                <!-- Game message -->
+                <div class="message-panel">
+                    <div class="message-icon">♟</div>
+
+                    <div class="message-content">
+                        <span class="message-label">GAME STATUS</span>
+                        <p id="message">Welcome! Start a new game.</p>
+                    </div>
+                </div>
+
+                <!-- Controls -->
+                <div class="game-controls">
+                    <button id="reset" class="btn btn-primary" type="button">
+                        <span>↻</span>
+                        Reset Game
+                    </button>
+
+                    <div class="rules-note">
+                        <span class="rules-icon">ⓘ</span>
+                        Captures are mandatory
+                    </div>
+                </div>
+
+            </section>
+
+            <!-- Sidebar -->
+            <aside class="sidebar">
+
+                <!-- Turn information -->
+                <section class="info-card turn-card">
+                    <div class="card-heading">
+                        <span class="card-icon">◷</span>
+                        <h3>Current Turn</h3>
+                    </div>
+
+                    <div class="turn-indicator">
+                        <span id="turnIndicator" class="turn-piece white-piece"></span>
+
+                        <div>
+                            <p class="turn-caption">PLAYER TO MOVE</p>
+                            <h2 id="turnText">White</h2>
+                        </div>
+                    </div>
+
+                    <div class="turn-divider"></div>
+
+                    <div class="turn-player-row">
+                        <span class="mini-color white-color"></span>
+                        <span>White's turn</span>
+                        <strong id="whiteTurn">Your turn</strong>
+                    </div>
+
+                    <div class="turn-player-row">
+                        <span class="mini-color black-color"></span>
+                        <span>Black's turn</span>
+                        <strong id="blackTurn">Waiting</strong>
+                    </div>
+                </section>
+
+                <!-- White statistics -->
+                <section class="info-card">
+                    <div class="card-heading">
+                        <span class="card-icon white-icon">♙</span>
+                        <h3>White Pieces</h3>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-label">Pieces</span>
+                            <strong id="whiteCount">20</strong>
+                        </div>
+
+                        <div class="stat-box">
+                            <span class="stat-label">Kings</span>
+                            <strong id="whiteKings">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="piece-progress">
+                        <div id="whiteProgress" class="progress-fill white-progress"></div>
+                    </div>
+                </section>
+
+                <!-- Black statistics -->
+                <section class="info-card">
+                    <div class="card-heading">
+                        <span class="card-icon black-icon">♟</span>
+                        <h3>Black Pieces</h3>
+                    </div>
+
+                    <div class="stats-grid">
+                        <div class="stat-box">
+                            <span class="stat-label">Pieces</span>
+                            <strong id="blackCount">20</strong>
+                        </div>
+
+                        <div class="stat-box">
+                            <span class="stat-label">Kings</span>
+                            <strong id="blackKings">0</strong>
+                        </div>
+                    </div>
+
+                    <div class="piece-progress">
+                        <div id="blackProgress" class="progress-fill black-progress"></div>
+                    </div>
+                </section>
+
+                <!-- Multiplayer room -->
+                <section class="info-card room-card">
+                    <div class="card-heading">
+                        <span class="card-icon">♧</span>
+                        <h3>Multiplayer</h3>
+                    </div>
+
+                    <p class="card-description">
+                        Create or join a room to play with another player.
+                    </p>
+
+                    <label for="room">Room Code</label>
+
+                    <div class="room-input-row">
+                        <input
+                            id="room"
+                            type="text"
+                            placeholder="Enter room code"
+                            maxlength="20"
+                            autocomplete="off"
+                        >
+
+                        <button id="join" class="btn btn-join" type="button">
+                            Join
+                        </button>
+                    </div>
+
+                    <p class="room-hint">
+                        Both players should use the same room code.
+                    </p>
+                </section>
+
+                <!-- Rules -->
+                <section class="info-card rules-card">
+                    <div class="card-heading">
+                        <span class="card-icon">✦</span>
+                        <h3>How to Play</h3>
+                    </div>
+
+                    <ul class="rules-list">
+                        <li>
+                            <span class="rule-number">01</span>
+                            <span>Move your pieces diagonally.</span>
+                        </li>
+
+                        <li>
+                            <span class="rule-number">02</span>
+                            <span>Capture opponent pieces by jumping.</span>
+                        </li>
+
+                        <li>
+                            <span class="rule-number">03</span>
+                            <span>Kings can move across diagonals.</span>
+                        </li>
+
+                        <li>
+                            <span class="rule-number">04</span>
+                            <span>Capture moves are mandatory.</span>
+                        </li>
+                    </ul>
+                </section>
+
+            </aside>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span>INTERNATIONAL DRAUGHTS</span>
+            <span class="footer-separator">•</span>
+            <span>STRATEGY · PATIENCE · PRECISION</span>
+        </footer>
+
+    </div>
+</body>
+</html>
